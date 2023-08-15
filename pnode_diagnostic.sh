@@ -67,7 +67,7 @@ MAIN_DISK=$(df / | grep '^/dev' | awk '{print $1}')
 sleep 5
 
 magentaprint 'Creating Diagnostic File...'
-sudo touch /home/nuc/pnode_diagnostic
+sudo touch /home/nuc/pnode_diagnostic.txt
 sleep 3
 yellowprint 'Stopping inc_mainnet Docker Container...'
 sudo docker stop inc_mainnet
@@ -81,19 +81,21 @@ magentaprint 'Installing Smartmontools, Memtester, Htop, Speedtest-cli, NCDU, Pa
 sudo apt install smartmontools memtester htop speedtest-cli ncdu pastebinit -y &> /dev/null
 sleep 3
 
+$MAIN_DISK >> /home/nuc/pnode_diagnostic.txt
+
 magentaprint 'Starting SSD test'
-sudo smartctl -t long $MAIN_DISK
+sudo smartctl -t short $MAIN_DISK
 sleep 3
 
 magentaprint 'Testing pNode RAM for Issues...'
-sudo memtester 2048 1 >> /home/nuc/pnode_diagnostic
+sudo memtester 1024 1 >> /home/nuc/pnode_diagnostic.txt
 sleep 3
 magentaprint 'Checking Connection Speeds'
-sudo speedtest-cli >> /home/nuc/pnode_diagnostic
+sudo speedtest-cli >> /home/nuc/pnode_diagnostic.txt
 yellowprint 'Removing IP address from log output'
-sudo sed -i '/^Testing from/d' pnode_diagnostic
+sudo sed -i '/^Testing from/d' pnode_diagnostic.txt
 yellowprint 'Removing other identifiable information'
-sudo sed -i '/^Hosted by/d' pnode_diagnostic
+sudo sed -i '/^Hosted by/d' pnode_diagnostic.txt
 sleep 3
 
 magentaprint '10 minutes remaining...'
@@ -116,8 +118,8 @@ magentaprint '2 minutes remaining...'
 sleep 60
 magentaprint '1 minutes remaining...'
 sleep 60
-greenprint 'Test Complete! 🥳'
-sudo smartctl -l selftest $MAIN_DISK >> /home/nuc/pnode_diagnostic
+magentaprint 'Test Complete! 🥳'
+sudo smartctl -l selftest $MAIN_DISK >> /home/nuc/pnode_diagnostic.txt
 
 greenprint 'Starting inc_mainnet Docker Container...'
 sudo docker start inc_mainnet
@@ -125,5 +127,5 @@ greenprint 'Starting pNode Supervisor Service...'
 sudo service supervisor start
 
 magentaprint 'Uploading pnode_diagnostic'
-sudo pastebinit -i /home/nuc/pnode_diagnostic
+cat /home/nuc/pnode_diagnostic.txt | nc termbin.com 9999
 greenprint 'Copy the above link and provide to Incognito pNode Team: we.incognito.org/g/Support'
