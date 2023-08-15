@@ -96,8 +96,15 @@ ESTIMATED_TIME=$(sudo smartctl -c $MAIN_DISK | grep "Extended self-test routine"
 
 # Loop to check the test status and calculate remaining time
 while true; do
-    # Get the percentage of the test that has been completed
-    COMPLETED_PERCENT=$(sudo smartctl -c $MAIN_DISK | grep "Self-test execution status" | awk '{print $4}' | tr -d '()')
+    # Get the current status of the test
+    STATUS=$(sudo smartctl -c $MAIN_DISK | grep "Self-test execution status")
+
+    # Extract the percentage of the test that has been completed
+    if [[ $STATUS == *"completed without error"* ]]; then
+        COMPLETED_PERCENT=100
+    else
+        COMPLETED_PERCENT=$(echo $STATUS | grep -oP '\((\K[^\%]+)')
+    fi
 
     # Calculate remaining time
     REMAINING_TIME=$((ESTIMATED_TIME * (100 - COMPLETED_PERCENT) / 100))
