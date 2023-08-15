@@ -67,7 +67,12 @@ MAIN_DISK=$(df / | grep '^/dev' | awk '{print $1}')
 sleep 5
 
 magentaprint 'Creating Diagnostic File...'
-sudo touch /home/nuc/aos/pnode_diagnostic
+sudo touch /home/nuc/pnode_diagnostic
+sleep 3
+yellowprint 'Stopping inc_mainnet Docker Container...'
+sudo docker stop inc_mainnet
+yellowprint 'Stopping pNode Supervisor Service...'
+sudo service supervisor stop
 sleep 3
 magentaprint 'Updating apt'
 sudo apt update &> /dev/null
@@ -76,52 +81,52 @@ magentaprint 'Installing Smartmontools, Memtester, Htop, Speedtest-cli, NCDU, Pa
 sudo apt install smartmontools memtester htop speedtest-cli ncdu pastebinit -y &> /dev/null
 sleep 3
 
-magentaprint 'Starting SSD'
+magentaprint 'Starting SSD test'
 sudo smartctl -t long $MAIN_DISK
 sleep 3
 
-magentaprint 'Test Complete! 🥳'
-sudo smartctl -l selftest $MAIN_DISK >> /home/nuc/aos/pnode_diagnostic
-
-magentaprint 'Test pNode RAM for Issues'
-sudo memtester 2048 1 >> /home/nuc/aos/pnode_diagnostic
+magentaprint 'Testing pNode RAM for Issues...'
+sudo memtester 2048 1 >> /home/nuc/pnode_diagnostic
 sleep 3
 magentaprint 'Checking Connection Speeds'
-sudo speedtest-cli >> /home/nuc/aos/pnode_diagnostic
-sudo sed -i '/^Testing from/d' filename.txt
+sudo speedtest-cli >> /home/nuc/pnode_diagnostic
+yellowprint 'Removing IP address from log output'
+sudo sed -i '/^Testing from/d' pnode_diagnostic
+yellowprint 'Removing other identifiable information'
+sudo sed -i '/^Hosted by/d' pnode_diagnostic
 sleep 3
 
-# Get the estimated time for the long test
-ESTIMATED_TIME=$(sudo smartctl -c $MAIN_DISK | grep "Extended self-test routine" | awk '{print $4}' | tr -d '[]')
+magentaprint '10 minutes remaining...'
+sleep 60
+magentaprint '9 minutes remaining...'
+sleep 60
+magentaprint '8 minutes remaining...'
+sleep 60
+magentaprint '7 minutes remaining...'
+sleep 60
+magentaprint '6 minutes remaining...'
+sleep 60
+magentaprint '5 minutes remaining...'
+sleep 60
+magentaprint '4 minutes remaining...'
+sleep 60
+magentaprint '3 minutes remaining...'
+sleep 60
+magentaprint '2 minutes remaining...'
+sleep 60
+magentaprint '1 minutes remaining...'
+sleep 60
+greenprint 'Test Complete! 🥳'
+sudo smartctl -l selftest $MAIN_DISK >> /home/nuc/pnode_diagnostic
 
-# Loop to check the test status and calculate remaining time
-while true; do
-    # Get the current status of the test
-    STATUS=$(sudo smartctl -c $MAIN_DISK | grep "Self-test execution status")
-
-    # Extract the percentage of the test that has been completed
-    if [[ $STATUS == *"completed without error"* ]]; then
-        COMPLETED_PERCENT=100
-    else
-        COMPLETED_PERCENT=$(echo $STATUS | grep -oP '\((\K[^\%]+)')
-    fi
-
-    # Calculate remaining time
-    REMAINING_TIME=$((ESTIMATED_TIME * (100 - COMPLETED_PERCENT) / 100))
-
-    # Break the loop if the test is completed
-    if [[ $COMPLETED_PERCENT -eq 100 ]]; then
-        break
-    fi
-
-    # Display the remaining time
-    magentaprint "$REMAINING_TIME minutes remaining..."
-
-    # Wait for a minute before checking again
-    sleep 60
-done
+greenprint 'Starting inc_mainnet Docker Container...'
+sudo docker start inc_mainnet
+greenprint 'Starting pNode Supervisor Service...'
+sudo service supervisor start
 
 magentaprint 'Uploading pnode_diagnostic'
-sudo pastebinit -i /home/nuc/aos/pnode_diagnostic -b sprunge.us
+sudo pastebinit -i /home/nuc/pnode_diagnostic -b sprunge.us
 magentaprint 'Copy the above link and provide to Incognito pNode Team: we.incognito.org/g/Support'
 sleep 3
+
+done
