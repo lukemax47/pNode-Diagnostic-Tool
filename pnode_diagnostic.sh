@@ -125,5 +125,5 @@ greenprint 'Starting pNode Supervisor Service...'
 sudo service supervisor start
 
 magentaprint 'Uploading pnode_diagnostic'
-sudo pastebinit -i /home/nuc/pnode_diagnostic -b http://paste.debian.net
+sudo pastebinit -i /home/nuc/pnode_diagnostic
 greenprint 'Copy the above link and provide to Incognito pNode Team: we.incognito.org/g/Support'
