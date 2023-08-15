@@ -80,6 +80,17 @@ magentaprint 'Starting SSD'
 sudo smartctl -t long $MAIN_DISK
 sleep 3
 
+magentaprint 'Test Complete! 🥳'
+sudo smartctl -l selftest $MAIN_DISK >> /home/nuc/aos/pnode_diagnostic
+
+magentaprint 'Test pNode RAM for Issues'
+sudo memtester 2048 1 >> /home/nuc/aos/pnode_diagnostic
+sleep 3
+magentaprint 'Checking Connection Speeds'
+sudo speedtest-cli >> /home/nuc/aos/pnode_diagnostic
+sudo sed -i '/^Testing from/d' filename.txt
+sleep 3
+
 # Get the estimated time for the long test
 ESTIMATED_TIME=$(sudo smartctl -c $MAIN_DISK | grep "Extended self-test routine" | awk '{print $4}' | tr -d '[]')
 
@@ -102,17 +113,6 @@ while true; do
     # Wait for a minute before checking again
     sleep 60
 done
-
-magentaprint 'Test Complete! 🥳'
-sudo smartctl -l selftest $MAIN_DISK >> /home/nuc/aos/pnode_diagnostic
-
-magentaprint 'Test pNode RAM for Issues'
-sudo memtester 2048 1 >> /home/nuc/aos/pnode_diagnostic
-sleep 3
-magentaprint 'Checking Connection Speeds'
-sudo speedtest-cli >> /home/nuc/aos/pnode_diagnostic
-sudo sed -i '/^Testing from/d' filename.txt
-sleep 3
 
 magentaprint 'Uploading pnode_diagnostic'
 sudo pastebinit -i /home/nuc/aos/pnode_diagnostic -b sprunge.us
