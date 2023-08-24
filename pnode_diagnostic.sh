@@ -88,7 +88,7 @@ sudo smartctl -t short $MAIN_DISK
 sleep 3
 
 magentaprint 'Testing pNode RAM for Issues...'
-sudo memtester 1024 1 >> /home/nuc/pnode_diagnostic.txt
+sudo memtester 1024 1 >> /home/nuc/pnode_diagnostic.txt 2>&1
 sleep 3
 magentaprint 'Checking Connection Speeds'
 sudo speedtest-cli >> /home/nuc/pnode_diagnostic.txt
@@ -119,7 +119,7 @@ sleep 60
 magentaprint '1 minutes remaining...'
 sleep 60
 magentaprint 'Test Complete! 🥳'
-sudo smartctl -l selftest $MAIN_DISK >> /home/nuc/pnode_diagnostic.txt
+sudo smartctl -l selftest $MAIN_DISK >> /home/nuc/pnode_diagnostic.txt 2>&1
 
 greenprint 'Starting inc_mainnet Docker Container...'
 sudo docker start inc_mainnet
